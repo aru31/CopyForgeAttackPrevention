@@ -123,6 +123,73 @@ for i in range(0, 352):
 plt.imshow(haarfinal)
 
 
+"""
+Inverse haar Trnasform of a row
+"""
+def InverseHaarWaveletTransform(x):
+    row = 1
+    matrix = [0.0]*8
+
+    while True:
+        for i in range(0,row):
+            sum_val = (x[i] + x[row + i])
+            diff = (x[i] - x[row+i])
+            matrix[2*i] = sum_val
+            matrix[2*i+1] = diff
+
+        if row == 4:
+            return matrix
+
+        x[:row*2] = matrix[:row*2]
+        row = int(row*2)
+
+
+"""
+Compression Value Based on some threshold Value
+"""
+
+for i in range(0,344,8):
+    for j in range(0,344,8):
+        tempmatrix = haarfinal[i: i+8, j: j+8]
+        mean = tempmatrix.mean() # mean
+        std = tempmatrix.std() #standard deviation
+        for x in (i,i+8):
+            for y in (j,j+8):
+                if abs(haarfinal[x][y]-mean) < std :
+                    haarfinal[x][y] = 0
+
+
+haarinverse = [[float(0) for _ in range(352)] for _ in range(352)]
+haarinverse = np.asarray(haarinverse)
+
+for i in range(0, 352):
+    for j in range(0, 352, 8):
+        haarinverse[j:j+8, i] = InverseHaarWaveletTransform(haarfinal[j:j+8, i].astype('float'))
+
+haarfinalinverse = [[float(0) for _ in range(352)] for _ in range(352)]
+haarfinalinverse = np.asarray(haarfinalinverse)
+
+for i in range(0, 352):
+    for j in range(0, 352, 8):
+        haarfinalinverse[i, j:j+8] = InverseHaarWaveletTransform(haarinverse[i, j:j+8].astype('float'))
+
+plt.imshow(haarfinalinverse)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
