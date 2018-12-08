@@ -139,7 +139,7 @@ zerocountafter = 0
 
 for i in range(0,352):
     for j in range(0,352):
-        if abs(haarfinal[i][j]) < 10 :
+        if abs(haarfinal[i][j]) < 5 :
             haarfinal[i][j] = 0
             zerocountafter = zerocountafter + 1
             
@@ -196,3 +196,25 @@ for i in range(0, 352):
         haarfinalinverse[i, j:j+8] = InverseHaarWaveletTransform(haarinverse[i, j:j+8].astype('float'))
 
 plt.imshow(haarfinalinverse)
+
+
+"""
+MSE calculation
+"""
+MSE = 0.
+for i in range(0,352):
+    for j in range(0,352):
+        MSE = MSE + (yplane[i][j]-haarfinalinverse[i][j])*(yplane[i][j]-haarfinalinverse[i][j])
+        
+MSE = float(MSE)/(352*352)
+
+"""
+RMSE calcualtion
+"""
+RMSE = MSE ** (0.5)
+
+"""
+Calculating PSNR Ratio
+PSNR-> Peak Signal to Nose Ratio
+"""
+PSNR = 20 * math.log10(255.0/RMSE)
