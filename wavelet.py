@@ -17,10 +17,12 @@ from skimage import data
 from skimage import color
 from skimage.util import view_as_blocks
 import math
-import pywt
-pywt.Wavelet('Haar')
 
 %matplotlib inline
+
+"""
+PreProessing phase Of the Image
+"""
 
 def rgb2gray(rgb):
     return np.dot(rgb[...,:3], [0.299, 0.587, 0.114])
@@ -77,14 +79,15 @@ plt.imshow(yplane)
 plt.imshow(cbplane)
 plt.imshow(crplane)
 
+
 """
-We are going to apply wavelet transform on y plane
+Applying wavelet transform algorithm on yplane of YcbCr Image
 """
 
 import math
 
 """
-Function to write haarTransform to get haarfinal matrix
+haarTransform of a row matrix to get haarfinal matrix
 """
 
 def HaarWaveletTransform(x):
@@ -122,8 +125,9 @@ for i in range(0, 352):
 
 plt.imshow(haarfinal)
 
+
 """
-compression ratio
+Number of Zeros in haar matrix calculated initially
 """
 zerocountbefore = 0
 
@@ -131,9 +135,11 @@ for i in range(0,352):
     for j in range(0,352):
         if haarfinal[i][j] == 0 :
             zerocountbefore = zerocountbefore + 1
-            
+
+size = yplane.size
+
 """
-threshold
+Compression by setting Up a Random Threshold
 """
 zerocountafter = 0
 
@@ -143,10 +149,10 @@ for i in range(0,352):
             haarfinal[i][j] = 0
             zerocountafter = zerocountafter + 1
             
-compressionRatio = float(123904-zerocountbefore)/float(123904 - zerocountafter)
+compressionRatio = float(size - zerocountbefore)/float(size - zerocountafter)
 
 """
-Inverse haar Trnasform of a row
+Inverse haar Trnasform of a Row Martix
 """
 def InverseHaarWaveletTransform(x):
     row = 1
@@ -167,18 +173,22 @@ def InverseHaarWaveletTransform(x):
 
 
 """
-Compression Value Based on some threshold Value
+Compression Ratio Calculated Based on some threshold Value in
+  the following Paper
+  
+Image Compression Based upon Wavelet Transform and a 
+Statistical Threshold 
 """
 
-#for i in range(0,344,8):
- #   for j in range(0,344,8):
-  #      tempmatrix = haarfinal[i: i+8, j: j+8]
-   #     mean = tempmatrix.mean() # mean
-    #    std = tempmatrix.std() #standard deviation
-     #   for x in (i,i+8):
-      #      for y in (j,j+8):
-       #         if abs(haarfinal[x][y]-mean) < std :
-        #            haarfinal[x][y] = 0
+for i in range(0,344,8):
+    for j in range(0,344,8):
+        tempmatrix = haarfinal[i: i+8, j: j+8]
+        mean = tempmatrix.mean()
+        std = tempmatrix.std()
+        for x in (i,i+8):
+            for y in (j,j+8):
+                if abs(haarfinal[x][y]-mean) < std :
+                    haarfinal[x][y] = 0
 
 
 haarinverse = [[float(0) for _ in range(352)] for _ in range(352)]
@@ -199,7 +209,8 @@ plt.imshow(haarfinalinverse)
 
 
 """
-MSE calculation
+RMSE Calculation
+RMSE-> Root Mean Square Error
 """
 MSE = 0.
 for i in range(0,352):
@@ -207,14 +218,24 @@ for i in range(0,352):
         MSE = MSE + (yplane[i][j]-haarfinalinverse[i][j])*(yplane[i][j]-haarfinalinverse[i][j])
         
 MSE = float(MSE)/(352*352)
-
-"""
-RMSE calcualtion
-"""
 RMSE = MSE ** (0.5)
+
 
 """
 Calculating PSNR Ratio
 PSNR-> Peak Signal to Nose Ratio
 """
 PSNR = 20 * math.log10(255.0/RMSE)
+
+
+"""
+Result
+For Compression Ratio 10
+PSNR ratio Obitained for this Image is 34.5 which is pretty good
+Image Compression Implemented using Haar Wavelet Transform Technique
+"""
+
+
+
+
+
