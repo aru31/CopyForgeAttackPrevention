@@ -122,6 +122,28 @@ for i in range(0, 352):
 
 plt.imshow(haarfinal)
 
+"""
+compression ratio
+"""
+zerocountbefore = 0
+
+for i in range(0,352):
+    for j in range(0,352):
+        if haarfinal[i][j] == 0 :
+            zerocountbefore = zerocountbefore + 1
+            
+"""
+threshold
+"""
+zerocountafter = 0
+
+for i in range(0,352):
+    for j in range(0,352):
+        if abs(haarfinal[i][j]) < 10 :
+            haarfinal[i][j] = 0
+            zerocountafter = zerocountafter + 1
+            
+compressionRatio = float(123904-zerocountbefore)/float(123904 - zerocountafter)
 
 """
 Inverse haar Trnasform of a row
@@ -148,15 +170,15 @@ def InverseHaarWaveletTransform(x):
 Compression Value Based on some threshold Value
 """
 
-for i in range(0,344,8):
-    for j in range(0,344,8):
-        tempmatrix = haarfinal[i: i+8, j: j+8]
-        mean = tempmatrix.mean() # mean
-        std = tempmatrix.std() #standard deviation
-        for x in (i,i+8):
-            for y in (j,j+8):
-                if abs(haarfinal[x][y]-mean) < std :
-                    haarfinal[x][y] = 0
+#for i in range(0,344,8):
+ #   for j in range(0,344,8):
+  #      tempmatrix = haarfinal[i: i+8, j: j+8]
+   #     mean = tempmatrix.mean() # mean
+    #    std = tempmatrix.std() #standard deviation
+     #   for x in (i,i+8):
+      #      for y in (j,j+8):
+       #         if abs(haarfinal[x][y]-mean) < std :
+        #            haarfinal[x][y] = 0
 
 
 haarinverse = [[float(0) for _ in range(352)] for _ in range(352)]
@@ -174,26 +196,3 @@ for i in range(0, 352):
         haarfinalinverse[i, j:j+8] = InverseHaarWaveletTransform(haarinverse[i, j:j+8].astype('float'))
 
 plt.imshow(haarfinalinverse)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
