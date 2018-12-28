@@ -80,25 +80,27 @@ s_interval = int(math.sqrt(numpixels/num_clusters))
 Initializing in Making Clusters as a list represented by a
 cluster center
 First covering the width of one row and then the other
+Made a function because of their repeated Use
 """
 clusters = []
 
-h = int(s_interval/2)
-w = int(s_interval/2)
-while h<height:
-    while w<width:
-        clusters.append([h, w, lab[h][w][0], lab[h][w][1], lab[h][w][2]])
-        print(clusters)
-        w = w + s_interval
+def initializeCluster():
+    h = int(s_interval/2)
     w = int(s_interval/2)
-    h = h + s_interval
+    while h<height:
+        while w<width:
+            clusters.append([h, w, lab[h][w][0], lab[h][w][1], lab[h][w][2]])
+            print(clusters)
+            w = w + s_interval
+        w = int(s_interval/2)
+        h = h + s_interval
 
 
 """
 Made a function because of their repeated Use
 Gradient According to the Paper
 """
-def get_gradient(h, w):
+def gradient(h, w):
     if w + 1 >= width:
         w = width - 2
     if h + 1 >= height:
@@ -115,12 +117,78 @@ Made a function because of their repeated Use
 Moving Clusters According to Paper to lowest gradient 
 position in 3*3 neighbourhood
 """
-def move_cluster():
-    
+def moveCluster():
+    for cluster in clusters:
+        grad = gradient(cluster[0], cluster[1])
+        for moveh in range(-1, 2):
+            for movew in range(-1, 2):
+                newh = moveh + cluster[0]
+                neww = movew + cluster[1]
+                newgrad = gradient(newh, neww)
+                
+                if grad > newgrad:
+                    cluster[0] = newh
+                    cluster[1] = neww
+                    cluster[2] = lab[newh][neww][0]
+                    cluster[3] = lab[newh][neww][1]
+                    cluster[4] = lab[newh][neww][2]
+                    grad = newgrad
 
+"""
+Made a function because of their repeated Use
+Euclidean Distance donot work, so calculated differntly
+for CIELAB
+"""
+distance = np.full((height, width), np.inf)
+label = {}
+imgpixels = []
+m = 10
 
+def distance():
+    for cluster in clusters:
+        for h in range(cluster[0] - (2 * s_interval), cluster[0] + (2 * s_interval)):
+            if h<0 or h>=height:
+                continue
+            for w in range(cluster[1] - (2 * s_interval), cluster[1] + (2 * s_interval)):
+                if w<0 or w>=width:
+                    continue
+                l = lab[h][w][0]
+                a = lab[h][w][1]
+                b = lab[h][w][2]
 
+                dlab = math.sqrt(math.pow(l - cluster[2], 2) + math.pow(a - cluster[3], 2) + math.pow(b - cluster[4], 2))
+                dxy = math.sqrt(math.pow(h - cluster[0], 2) + math.pow(w - cluster[1], 2))
+                d = dlab + (m/s_interval)*dxy
+                if d<distance[h][w]:
+                    if (h, w) not in label:
+                        label[(h, w)] = cluster
+                        imgpixels.append(h, w)
+                    else:
+                        label[(h, w)]
+                        label[(h, w)] = cluster
+                        imgpixels.append(h, w)
 
+                    distance[h][w] = d
+                
+
+"""
+Made a function because of their repeated Use
+Updating New Cluster Centres
+"""
+def newCluster():
+    for cluster in clusters:
+        new_h = new_w = num = 0
+        for pixel in imgpixels:
+            new_h = newh + pixel[0]
+            new_w = new_w + pixel[1]
+            num = num + 1
+            n_h = new_h / num
+            n_w = new_w / num
+            cluster[0] = n_h
+            cluster[1] = n_w
+            cluster[2] = lab[n_h][n_w][0]
+            cluster[3] = lab[n_h][n_w][1]
+            cluster[4] = lab[n_h][n_w][2]
 
 
 
