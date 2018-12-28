@@ -69,7 +69,7 @@ lab = color.rgb2lab(rgb)
 One Cluster can be represented with 5 parameters
 x, y, l, a, b
 """
-num_clusters = 200
+num_clusters = 100
 height = gray.shape[0]
 width = gray.shape[1]
 numpixels = height * width
@@ -101,14 +101,17 @@ Made a function because of their repeated Use
 Gradient According to the Paper
 """
 def gradient(h, w):
-    if w + 1 >= width:
+    if w+1 >= width:
         w = width - 2
-    if h + 1 >= height:
+    if h+1 >= height:
         h = height - 2
+    if h<=0:
+        h = 0
+    if w<=0:
+        w = 0
 
-    gradient = lab[w + 1][h + 1][0] - lab[w][h][0] + \
-               lab[w + 1][h + 1][1] - lab[w][h][1] + \
-               lab[w + 1][h + 1][2] - lab[w][h][2]
+    gradient = math.pow((lab[h+1][w][0]-lab[h-1][w][0]), 2) + math.pow((lab[h+1][w][1]-lab[h-1][w][1]), 2) + math.pow((lab[h+1][w][2]-lab[h-1][w][2]), 2) + \
+               math.pow((lab[h][w+1][0]-lab[h][w-1][0]), 2) + math.pow((lab[h][w+1][1]-lab[h][w-1][1]), 2) + math.pow((lab[h][w+1][2]-lab[h][w-1][2]), 2)
     return gradient
 
 
@@ -137,15 +140,20 @@ def moveCluster():
 """
 Made a function because of their repeated Use
 Euclidean Distance donot work, so calculated differntly
+i.e asscociating every pixel of the image to it's center
 for CIELAB
 """
-distance = np.full((height, width), np.inf)
+dist = np.full((height, width), np.inf)
 label = {}
-imgpixels = []
 m = 10
+imgpixel = []
 
+# Definitely a million $ Algorithm... nailed it
 def distance():
+    i=-1
     for cluster in clusters:
+        imgpixel.append([])
+        i = i+1
         for h in range(cluster[0] - (2 * s_interval), cluster[0] + (2 * s_interval)):
             if h<0 or h>=height:
                 continue
@@ -159,26 +167,27 @@ def distance():
                 dlab = math.sqrt(math.pow(l - cluster[2], 2) + math.pow(a - cluster[3], 2) + math.pow(b - cluster[4], 2))
                 dxy = math.sqrt(math.pow(h - cluster[0], 2) + math.pow(w - cluster[1], 2))
                 d = dlab + (m/s_interval)*dxy
-                if d<distance[h][w]:
-                    if (h, w) not in label:
-                        label[(h, w)] = cluster
-                        imgpixels.append(h, w)
-                    else:
-                        label[(h, w)]
-                        label[(h, w)] = cluster
-                        imgpixels.append(h, w)
-
-                    distance[h][w] = d
-                
+                if d<dist[h][w]:
+                    for j in range(0, i):
+                        if (h, w) in imgpixel[j]:
+                            imgpixel[j].remove((h, w))
+                        else:
+                            imgpixel[i].append((h, w))
+                    dist[h][w] = d
+            
 
 """
 Made a function because of their repeated Use
 Updating New Cluster Centres
 """
 def newCluster():
+    i=-1
     for cluster in clusters:
-        new_h = new_w = num = 0
-        for pixel in imgpixels:
+        new_h = 0
+        new_w = 0
+        num = 0
+        i = i+1
+        for pixel in imgpixel[i]:
             new_h = newh + pixel[0]
             new_w = new_w + pixel[1]
             num = num + 1
@@ -191,10 +200,40 @@ def newCluster():
             cluster[4] = lab[n_h][n_w][2]
 
 
+"""
+Iterating the Number of times required to call the above function
+Just implemented K-Means Algorithm WOW!
+"""
+def iterationCluster():
+    iterations = 10
+    initializeCluster()
+    moveCluster()
+    for i in range(iterations):
+        distance()
+        newCluster()
 
+# Moment Of Truth
+iterationCluster()
 
+"""
+New Image that we get after finally getting SuperPixels
+"""
+def finalImage():
+    newimg = np.copy(img)
+    i=-1
+    for cluster in clusters:
+        i = i+1
+        for pixel in imgpixel[i]:
+            newimg[pixel[0]][pixel[w]][0] = cluster[0]
+            newimg[pixel[0]][pixel[w]][1] = cluster[1]
+            newimg[pixel[0]][pixel[w]][2] = cluster[2]
+        newimg[cluster[0]][cluster[1]][0] = 0
+        newimg[cluster[0]][cluster[1]][1] = 0
+        newimg[cluster[0]][clustep[2]][2] = 0
+    
+    newrgbimg = color.lab2rgb(newimg)
+    return newrgbimg
 
-
-
-
-
+"""
+SLIC Implemented
+"""
