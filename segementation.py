@@ -44,11 +44,11 @@ plt.imshow(gray, cmap = plt.get_cmap('gray'))
 gray = np.array(gray)
 gray.shape
 
+
 """
 Canny Edge Detector
 TODO TASK: Implement Without CV2 Libraries
 """
-
 imgcv = cv2.imread('CRW_4810_scale.jpg',0)
 edges = cv2.Canny(imgcv,100,200)
 plt.subplot(121),plt.imshow(imgcv,cmap = 'gray')
@@ -61,21 +61,20 @@ plt.show()
 """
 SLIC SuperPixel Algorithm
 """
-
 rgb = io.imread('CRW_4810_scale.jpg')
 lab = color.rgb2lab(rgb)
+
 
 """
 One Cluster can be represented with 5 parameters
 x, y, l, a, b
 """
-
-
 num_clusters = 200
 height = gray.shape[0]
 width = gray.shape[1]
 numpixels = height * width
 s_interval = int(math.sqrt(numpixels/num_clusters))
+
 
 """
 Initializing in Making Clusters as a list represented by a
@@ -88,7 +87,7 @@ h = int(s_interval/2)
 w = int(s_interval/2)
 while h<height:
     while w<width:
-        clusters.append([h, w, rgb[h][w][0], rgb[h][w][1], rgb[h][w][2]])
+        clusters.append([h, w, lab[h][w][0], lab[h][w][1], lab[h][w][2]])
         print(clusters)
         w = w + s_interval
     w = int(s_interval/2)
@@ -96,6 +95,7 @@ while h<height:
 
 
 """
+Made a function because of their repeated Use
 Gradient According to the Paper
 """
 def get_gradient(h, w):
@@ -104,11 +104,19 @@ def get_gradient(h, w):
     if h + 1 >= height:
         h = height - 2
 
-    gradient = rgb[w + 1][h + 1][0] - rgb[w][h][0] + \
-               rgb[w + 1][h + 1][1] - rgb[w][h][1] + \
-               rgb[w + 1][h + 1][2] - rgb[w][h][2]
+    gradient = lab[w + 1][h + 1][0] - lab[w][h][0] + \
+               lab[w + 1][h + 1][1] - lab[w][h][1] + \
+               lab[w + 1][h + 1][2] - lab[w][h][2]
     return gradient
 
+
+"""
+Made a function because of their repeated Use
+Moving Clusters According to Paper to lowest gradient 
+position in 3*3 neighbourhood
+"""
+def move_cluster():
+    
 
 
 
